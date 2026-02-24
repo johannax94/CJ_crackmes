@@ -1,2 +1,0 @@
-Clément LANGUEDOC
-Johanna MEGUEDAD
