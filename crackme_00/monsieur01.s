@@ -1,7 +1,7 @@
 ; crackme_flag_FIXED.asm - Linux x86_64
 section .data
-    prompt      db "le meilleur Monsieur du monde ? : ", 10, 0
-    good_msg    db "Good Job! Flag: CR4CK1NG5NOTCR1M", 10, 0
+    prompt      db " qui est le meilleur monsieur du monde : ", 10, 0
+    good_msg    db "Good Job! Flag: ejJd09nn3nA9kzk2", 10, 0
     bad_msg     db "Mauvais!", 10, 0
     password    db "MonsieurIbucziapbcuazixpbaz", 0
 
@@ -16,7 +16,7 @@ _start:
     mov rax, 1
     mov rdi, 1
     mov rsi, prompt
-    mov rdx, 16
+    mov rdx, 43
     syscall
 
     ; Lire input
