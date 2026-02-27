@@ -46,6 +46,7 @@ _start:
     test rax, rax
     jz bad_label
 
+
     mov rax, 1
     mov rdi, 1
     mov rsi, msg_goodjob

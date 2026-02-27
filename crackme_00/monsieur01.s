@@ -1,97 +1,97 @@
-; crackme_flag_FIXED.asm - Linux x86_64
+
 section .data
-    prompt      db " qui est le meilleur monsieur du monde : ", 10, 0
-    good_msg    db "Good Job! Flag: ejJd09nn3nA9kzk2", 10, 0
-    bad_msg     db "Mauvais!", 10, 0
-    password    db "MonsieurIbucziapbcuazixpbaz", 0
+    msg_prompt  db "Enter key: ", 0
+    msg_good    db "Good Job! Flag: ", 0
+    msg_bad     db "Wrong key!", 10, 0
+    msg_newline db 10, 0
+    secret_key  db 0x6b,0x68,0x69,0x6e,0x6f,0x6c,0x6d,0x62,0x63,0x12,0x1b,0x19,0x11,0x12,0x1b,0x19
 
 section .bss
-    input       resb 32
+    buffer      resb 18
+    flag_buf    resb 17
 
 section .text
     global _start
 
 _start:
-
     mov rax, 1
     mov rdi, 1
-    mov rsi, prompt
-    mov rdx, 43
+    mov rsi, msg_prompt
+    mov rdx, 11
     syscall
 
-    ; Lire input
     mov rax, 0
     mov rdi, 0
-    mov rsi, input
-    mov rdx, 32
+    mov rsi, buffer
+    mov rdx, 17
     syscall
 
-    ; ENLEVER le 
-    mov rdi, input
-    call trim_newline
+    mov rcx, rax
+    dec rcx
+    mov byte [buffer + rcx], 0
 
-    
-    mov rdi, input
-    mov rsi, password
-    call my_strcmp
 
+    mov rdi, buffer
+    mov rsi, flag_buf
+    mov rcx, 16
+.xor_loop:
+    mov al, [rdi]
+    xor al, 0x5a
+    mov [rsi], al
+    inc rdi
+    inc rsi
+    loop .xor_loop
+
+    mov rdi, flag_buf
+    mov rsi, secret_key
+    call memcmp
     test rax, rax
-    jz .good
+    jz bad_label
 
-.bad:
+good_label:
     mov rax, 1
     mov rdi, 1
-    mov rsi, bad_msg
-    mov rdx, 15
+    mov rsi, msg_good
+    mov rdx, 16
     syscall
-    jmp .exit
 
-.good:
     mov rax, 1
     mov rdi, 1
-    mov rsi, good_msg
-    mov rdx, 32
+    mov rsi, buffer
+    mov rdx, 16
     syscall
 
-.exit:
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, msg_newline
+    mov rdx, 1
+    syscall
+
+    jmp exit_label
+
+bad_label:
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, msg_bad
+    mov rdx, 11
+    syscall
+
+exit_label:
     mov rax, 60
     xor rdi, rdi
     syscall
 
-;
-trim_newline:
-    mov rcx, -1
-.loop:
-    inc rcx
-    cmp byte [rdi + rcx], 0
-    je .done
-    cmp byte [rdi + rcx], 10    ; \n
-    je .found_nl
-    cmp byte [rdi + rcx], 13    ; \r
-    je .found_nl
-    jmp .loop
-
-.found_nl:
-    mov byte [rdi + rcx], 0   
-.done:
-    ret
-
-my_strcmp:
+memcmp:
+    mov rcx, 16
 .loop:
     mov al, [rdi]
-    mov bl, [rsi]
-    cmp al, bl
-    jne .not_equal
-    test al, al
-    jz .equal
+    cmp al, [rsi]
+    jne .fail
     inc rdi
     inc rsi
-    jmp .loop
-
-.not_equal:
+    loop .loop
     mov rax, 1
     ret
-
-.equal:
+.fail:
     xor rax, rax
     ret
