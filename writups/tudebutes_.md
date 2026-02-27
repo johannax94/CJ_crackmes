@@ -3,3 +3,4 @@ Si la chaine de caractères est la même alors il renvoie un message de succès 
 Pour obtenir le flag, nous avons simplement récupéré la valeur dans flag_enc et l'avons xoré (cyberchef) avec 90.
 Le flag est : 
 92I_34SYM0DD3BUT
+la clé est : H4CK3R_K3Y_2024!
