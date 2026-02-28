@@ -1,11 +1,9 @@
 section .data
-    prompt      db "Entrez le flag : ", 0
-    prompt_len  equ $ - prompt
     kat         db "Z7k!pQ9mR2sT5vW8xY1aB4cE6gH0jL3n"
     tak         db 0x72, 0x07, 0x28, 0x07, 0x3c, 0x66, 0x20, 0x74, 0x06, 0x39, 0x77, 0x0d, 0x3e, 0x7d, 0x63, 0x67
-    test1       db "Flag correct !", 10
+    test1       db "Good Job !", 10
     test1_len   equ $ - test1
-    error1      db "Flag incorrect !", 10
+    error1      db "Bad Password!", 10
     error1_len  equ $ - error1
 
 section .bss
@@ -21,12 +19,6 @@ _start:
     shl rdx, 32
     or rax, rdx
     mov [input1], rax
-
-    mov rax, 1
-    mov rdi, 1
-    mov rsi, prompt
-    mov rdx, prompt_len
-    syscall
 
     mov rax, 0
     mov rdi, 0
@@ -78,8 +70,10 @@ _start:
     mov rax, 1
     mov rdi, 1
     mov rsi, test1
-    mov rdx, 14
+    mov rdx, test1_len
     syscall
+
+    mov rdi, 0
     jmp .tok
 
 .exit:
@@ -92,6 +86,7 @@ _start:
     mov rsi, error1
     mov rdx, error1_len
     syscall
+
     mov rdi, 1
     jmp .tok
 
