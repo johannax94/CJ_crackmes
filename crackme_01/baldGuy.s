@@ -1,13 +1,17 @@
+
+
 section .data
-    msg_login    db "Login: ", 0
-    msg_pass     db 10, "Password: ", 0
-    msg_goodjob  db "Good Job!", 10, 0
-    msg_bad      db "Access refused", 10, 0
-    flag_enc     db 0x66,0x36,0x58,0x6c,0x6e,0x3b,0x5a,0x41,0x72,0x76,0x3e,0x81,0x58,0x74,0x74,0x5b
+    msg_prompt  db "Enter key: ", 0
+    msg_good    db "Good Job ! ", 0
+    msg_bad     db "Bad Password!", 10, 0
+    msg_newline db 10, 0
+    key_enc     db 0x12,0x6e,0x19,0x11,0x69,0x08,0x05,0x11,0x69,0x03,0x05,0x68,0x6a,0x68,0x6e,0x7b
+    flag_enc    db 0x63,0x68,0x13,0x05,0x69,0x6e,0x09,0x03,0x17,0x6a,0x1e,0x1e,0x69,0x18,0x0f,0x0e
 
 section .bss
-    buffer       resb 64
-    flag_dec     resb 32
+    buffer      resb 18     
+    key_buf     resb 17    
+    flag_buf    resb 17     
 
 section .text
     global _start
@@ -15,55 +19,72 @@ section .text
 _start:
     mov rax, 1
     mov rdi, 1
-    mov rsi, msg_login
-    mov rdx, 7
-    syscall
-
-    mov rax, 0
-    mov rdi, 0
-    mov rsi, buffer
-    mov rdx, 32
-    syscall
-
-    call check_login
-    test rax, rax
-    jz bad_label
-
-
-    mov rax, 1
-    mov rdi, 1
-    mov rsi, msg_pass
+    mov rsi, msg_prompt
     mov rdx, 11
     syscall
 
     mov rax, 0
     mov rdi, 0
     mov rsi, buffer
-    mov rdx, 32
+    mov rdx, 17
     syscall
 
-    call check_pass
+    mov rcx, rax
+    dec rcx
+    mov byte [buffer + rcx], 0
+
+
+    mov rdi, key_enc
+    mov rsi, key_buf
+    mov rcx, 16
+.xor_key:
+    mov al, [rdi]
+    xor al, 0x5a
+    mov [rsi], al
+    inc rdi
+    inc rsi
+    loop .xor_key
+
+    
+    mov rdi, key_buf
+    mov rsi, buffer
+    call memcmp
     test rax, rax
     jz bad_label
 
+good_label:
+    mov rdi, flag_enc
+    mov rsi, flag_buf
+    mov rcx, 16
+.xor_flag:
+    mov al, [rdi]
+    xor al, 0x5a
+    mov [rsi], al
+    inc rdi
+    inc rsi
+    loop .xor_flag
 
     mov rax, 1
     mov rdi, 1
-    mov rsi, msg_goodjob
-    mov rdx, 9
+    mov rsi, msg_good
+    mov rdx, 12
     syscall
 
-    
-    lea rdi, [flag_dec]
-    lea rsi, [flag_enc]
-    call decode_flag
-    
     mov rax, 1
     mov rdi, 1
-    lea rsi, [flag_dec]
+    mov rsi, flag_buf
     mov rdx, 16
     syscall
-    jmp exit_label
+
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, msg_newline
+    mov rdx, 1
+    syscall
+
+    mov rax, 60
+    xor rdi, rdi
+    syscall
 
 bad_label:
     mov rax, 1
@@ -72,55 +93,21 @@ bad_label:
     mov rdx, 13
     syscall
 
-exit_label:
     mov rax, 60
-    xor rdi, rdi
+    mov rdi, 1
     syscall
 
-check_login:
-    mov al, [buffer+0]
-    cmp al, 'd'
+memcmp:
+    mov rcx, 16
+.loop:
+    mov al, [rdi]
+    cmp al, [rsi]
     jne .fail
-    mov al, [buffer+1]
-    cmp al, 'a'
-    jne .fail
-    mov al, [buffer+2]
-    cmp al, 'x'
-    jne .fail
-    mov al, [buffer+3]
-    cmp al, 'i'
+    inc rdi
+    inc rsi
+    loop .loop
     mov rax, 1
     ret
 .fail:
     xor rax, rax
-    ret
-
-check_pass:
-    mov al, [buffer+0]
-    cmp al, 'o'
-    jne .failp
-    mov al, [buffer+1]
-    cmp al, 'r'
-    jne .failp
-    mov al, [buffer+2]
-    cmp al, 'h'
-    jne .failp
-    mov al, [buffer+3]
-    cmp al, 'q'
-    mov rax, 1
-    ret
-.failp:
-    xor rax, rax
-    ret
-
-decode_flag:
-    xor rcx, rcx
-.loop:
-    mov al, [rsi + rcx]
-    sub al, cl
-    mov [rdi + rcx], al
-    inc rcx
-    cmp rcx, 16
-    jb .loop
-    mov byte [rdi + rcx], 10
     ret
