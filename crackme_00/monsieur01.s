@@ -1,8 +1,8 @@
 
 section .data
     msg_prompt  db "Enter key: ", 0
-    msg_good    db "Good Job! Flag: ", 0
-    msg_bad     db "Wrong key!", 10, 0
+    msg_good    db "Good Job !", 10, 0
+    msg_bad     db "Bad Password!", 10, 0
     msg_newline db 10, 0
     secret_key  db 0x6b,0x68,0x69,0x6e,0x6f,0x6c,0x6d,0x62,0x63,0x12,0x1b,0x19,0x11,0x12,0x1b,0x19
 
@@ -52,33 +52,22 @@ good_label:
     mov rax, 1
     mov rdi, 1
     mov rsi, msg_good
-    mov rdx, 16
+    mov rdx, 11
     syscall
 
-    mov rax, 1
-    mov rdi, 1
-    mov rsi, buffer
-    mov rdx, 16
+    mov rax, 60
+    xor rdi, rdi
     syscall
-
-    mov rax, 1
-    mov rdi, 1
-    mov rsi, msg_newline
-    mov rdx, 1
-    syscall
-
-    jmp exit_label
 
 bad_label:
     mov rax, 1
     mov rdi, 1
     mov rsi, msg_bad
-    mov rdx, 11
+    mov rdx, 13
     syscall
 
-exit_label:
     mov rax, 60
-    xor rdi, rdi
+    mov rdi, 1
     syscall
 
 memcmp:
